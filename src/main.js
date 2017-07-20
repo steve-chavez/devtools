@@ -4,7 +4,7 @@ import fs from 'fs';
 import program from 'commander';
 import {version} from '../package.json';
 import runDashboard from './dashboard.js';
-import { initMigrations, migrate } from './migrations.js';
+import { init, migrate } from './migrations.js';
 
 program
   .version(version)
@@ -19,7 +19,7 @@ program
 program
   .command('migrations')
   .description('Run migrations')
-  .action(() => initMigrations());
+  .action(() => init());
 
 program
   .command('migrate <name>')
