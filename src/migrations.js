@@ -97,7 +97,7 @@ const devPgDumpToFile = file => {
 
 const prodPgDumpToFile = file => {
   console.log("Getting dump from production database...");
-  let p = proc.spawnSync('pg_dump', [PROD_PG_URI]);
+  let p = proc.spawnSync('docker', ['exec', `${COMPOSE_PROJECT_NAME}_db_1`, 'pg_dump', PROD_PG_URI]);
   if(p.stdout.toString()){
     fs.writeFileSync(file, p.stdout.toString());
     console.log("Done.");
