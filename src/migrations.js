@@ -67,44 +67,52 @@ const migrate = name => {
 
 const initSqitch = () => {
   let p = proc.spawnSync('sqitch',["init", DEV_DB_NAME, "--engine", "pg", "--top-dir", MIGRATIONS_DIR]);
-  if(p.stdout)
+  if(p.stdout.toString())
     console.log(p.stdout.toString());
-  if(p.stderr)
+  if(p.stderr.toString()){
     console.log(p.stderr.toString());
+    process.exit(0);
+  }
 };
 
 const migrateSqitch = name => {
   let p = proc.spawnSync('sqitch',["add", name, "-n", "Add migration"]);
-  if(p.stdout)
+  if(p.stdout.toString())
     console.log(p.stdout.toString());
-  if(p.stderr)
+  if(p.stderr.toString()){
     console.log(p.stderr.toString());
+    process.exit(0);
+  }
 };
 
 const devPgDumpToFile = file => {
   let p = proc.spawnSync('docker', ['exec', `${COMPOSE_PROJECT_NAME}_db_1`, 'pg_dump', DEV_DB_NAME, '-U', DEV_SUPER_USER]);
-  if(p.stdout)
+  if(p.stdout.toString())
     fs.writeFileSync(file, p.stdout.toString());
-  if(p.stderr)
+  if(p.stderr.toString()){
     console.log(p.stderr.toString());
+    process.exit(0);
+  }
 };
 
 const prodPgDumpToFile = file => {
   console.log("Getting dump from production database...");
   let p = proc.spawnSync('pg_dump', [PROD_PG_URI]);
-  if(p.stdout){
+  if(p.stdout.toString()){
     fs.writeFileSync(file, p.stdout.toString());
     console.log("Done.");
   }
-  if(p.stderr)
+  if(p.stderr.toString()){
     console.log(p.stderr.toString());
+    process.exit(0);
+  }
 };
 
 const apgdiffToFile = (file1, file2, destFile) => {
   let p = proc.spawnSync('apgdiff', [file1, file2]);
-  if(p.stdout)
+  if(p.stdout.toString())
     fs.writeFileSync(destFile, p.stdout.toString());
-  if(p.stderr)
+  if(p.stderr.toString())
     console.log(p.stderr.toString());
 };
 

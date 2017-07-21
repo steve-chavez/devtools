@@ -17,13 +17,13 @@ program
   .action(() => runDashboard(program.env));
 
 program
-  .command('migrations')
-  .description('Run migrations')
+  .command('init-migrations')
+  .description('Setup sqitch config for migrations')
   .action(() => init());
 
 program
-  .command('migrate <name>')
-  .description('Migrate')
+  .command('migrations <name>')
+  .description('Create a new sqitch migration')
   .action(name => migrate(name));
 
 program.parse(process.argv);
