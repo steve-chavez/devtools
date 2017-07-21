@@ -27,7 +27,7 @@ const init = () => {
                 `${MIGRATIONS_DIR}/revert/${INITIAL_FILE_NAME}.sql`);
 };
 
-const migrate = name => {
+const migrate = (name, note) => {
 
   const TMP_DIR = `${MIGRATIONS_DIR}/tmp`;
 
@@ -56,7 +56,7 @@ const migrate = name => {
   devPgDumpToFile(`${TMP_DIR}/dev-${name}.sql`);
   prodPgDumpToFile(`${TMP_DIR}/prod-${name}.sql`);
 
-  migrateSqitch(name);
+  migrateSqitch(name, note);
 
   apgdiffToFile(`${TMP_DIR}/dev-${name}.sql`,
                 `${TMP_DIR}/prod-${name}.sql`,
@@ -79,8 +79,8 @@ const initSqitch = () => {
   }
 };
 
-const migrateSqitch = name => {
-  let p = proc.spawnSync(SQITCH_PATH, ["add", name, "-n", "Add migration"]);
+const migrateSqitch = (name, note) => {
+  let p = proc.spawnSync(SQITCH_PATH, ["add", name, "-n", note || `Add ${name} migration`]);
   if(p.stdout.toString())
     console.log(p.stdout.toString());
   if(p.stderr.toString()){

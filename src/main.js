@@ -23,8 +23,9 @@ program
 
 program
   .command('migrations <name>')
+  .option("-n, --note [note]", "Add sqitch migration note")
   .description('Create a new sqitch migration')
-  .action(name => migrate(name));
+  .action((name, options) => migrate(name, options.note));
 
 program.parse(process.argv);
 
