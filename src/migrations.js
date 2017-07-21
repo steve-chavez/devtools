@@ -11,6 +11,10 @@ const DEV_SUPER_USER = process.env.SUPER_USER;
 const PROD_PG_URI = process.env.PROD_PG_URI;
 
 const COMPOSE_PROJECT_NAME = process.env.COMPOSE_PROJECT_NAME;
+
+const APGDIFF_PATH = process.env.APGDIFF_PATH || './apgdiff.jar'; 
+const SQITCH_PATH = process.env.SQITCH_PATH || 'sqitch'; 
+
 const MIGRATIONS_DIR = "./db/migrations";
 
 const init = () => {
@@ -66,7 +70,7 @@ const migrate = name => {
 };
 
 const initSqitch = () => {
-  let p = proc.spawnSync('sqitch',["init", DEV_DB_NAME, "--engine", "pg", "--top-dir", MIGRATIONS_DIR]);
+  let p = proc.spawnSync(SQITCH_PATH, ["init", DEV_DB_NAME, "--engine", "pg", "--top-dir", MIGRATIONS_DIR]);
   if(p.stdout.toString())
     console.log(p.stdout.toString());
   if(p.stderr.toString()){
@@ -76,7 +80,7 @@ const initSqitch = () => {
 };
 
 const migrateSqitch = name => {
-  let p = proc.spawnSync('sqitch',["add", name, "-n", "Add migration"]);
+  let p = proc.spawnSync(SQITCH_PATH, ["add", name, "-n", "Add migration"]);
   if(p.stdout.toString())
     console.log(p.stdout.toString());
   if(p.stderr.toString()){
@@ -112,7 +116,7 @@ const prodPgDumpToFile = file => {
 };
 
 const apgdiffToFile = (file1, file2, destFile) => {
-  let p = proc.spawnSync('apgdiff', [file1, file2]);
+  let p = proc.spawnSync('java', ['-jar', APGDIFF_PATH, file1, file2]);
   if(p.stdout.toString()){
     let content = "BEGIN;\n" + p.stdout.toString() + "\nCOMMIT;\n";
     fs.writeFileSync(destFile, content);
