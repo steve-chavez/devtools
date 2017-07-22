@@ -92,8 +92,15 @@ const migrateSqitch = (name, note) => {
 const devPgDumpToFile = file => {
   let p = proc.spawnSync('docker', ['exec', `${COMPOSE_PROJECT_NAME}_db_1`, 'pg_dump', DEV_DB_NAME, '-U', DEV_SUPER_USER]);
   if(p.stdout.toString()){
-    let content = "BEGIN;\n" + p.stdout.toString() + "\nCOMMIT;\n";
-    fs.writeFileSync(file, content);
+    let p2 = proc.spawnSync('docker', ['exec', `${COMPOSE_PROJECT_NAME}_db_1`, 'pg_dumpall', '--roles-only', '-U', DEV_SUPER_USER]);
+    if(p2.stdout.toString()){
+      let content = "BEGIN;" + "\n" + p2.stdout.toString() + "\n" + p.stdout.toString() + "\nCOMMIT;\n";
+      fs.writeFileSync(file, content);
+    }
+    if(p2.stderr.toString()){
+      console.log(p2.stderr.toString());
+      process.exit(0);
+    }
   }
   if(p.stderr.toString()){
     console.log(p.stderr.toString());
@@ -105,9 +112,16 @@ const prodPgDumpToFile = file => {
   console.log("Getting dump from production database...");
   let p = proc.spawnSync('docker', ['exec', `${COMPOSE_PROJECT_NAME}_db_1`, 'pg_dump', PROD_PG_URI]);
   if(p.stdout.toString()){
-    let content = "BEGIN;\n" + p.stdout.toString() + "\nCOMMIT;\n";
-    fs.writeFileSync(file, content);
-    console.log("Done.");
+    let p2 = proc.spawnSync('docker', ['exec', `${COMPOSE_PROJECT_NAME}_db_1`, 'pg_dumpall', '--roles-only', '-U', DEV_SUPER_USER]);
+    if(p2.stdout.toString()){
+      let content = "BEGIN;" + "\n" + p2.stdout.toString() + "\n" + p.stdout.toString() + "\nCOMMIT;\n";
+      fs.writeFileSync(file, content);
+      console.log("Done.");
+    }
+    if(p2.stderr.toString()){
+      console.log(p2.stderr.toString());
+      process.exit(0);
+    }
   }
   if(p.stderr.toString()){
     console.log(p.stderr.toString());
