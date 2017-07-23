@@ -2,6 +2,7 @@
 import proc from 'child_process';
 import {config} from 'dotenv';
 import fs from 'fs';
+import rimraf from 'rimraf';
 
 config();
 
@@ -37,9 +38,7 @@ const migrate = (name, note) => {
   };
 
   const removeTmpDir = () => {
-    fs.unlinkSync(`${MIGRATIONS_DIR}/tmp/dev-${name}.sql`);
-    fs.unlinkSync(`${MIGRATIONS_DIR}/tmp/prod-${name}.sql`);
-    fs.rmdirSync(TMP_DIR);
+    rimraf.sync(TMP_DIR);
   };
 
   const sqitchConfMustExist = () => {
