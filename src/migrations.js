@@ -52,6 +52,7 @@ const migrate = (name, note) => {
   sqitchConfMustExist();
 
   createTmpDir();
+
   devPgDumpToFile(`${TMP_DIR}/dev-${name}.sql`);
   prodPgDumpToFile(`${TMP_DIR}/prod-${name}.sql`);
 
@@ -60,7 +61,6 @@ const migrate = (name, note) => {
   apgdiffToFile(`${TMP_DIR}/dev-${name}.sql`,
                 `${TMP_DIR}/prod-${name}.sql`,
                 `${MIGRATIONS_DIR}/deploy/${name}.sql`);
-
   apgdiffToFile(`${TMP_DIR}/prod-${name}.sql`,
                 `${TMP_DIR}/dev-${name}.sql`,
                 `${MIGRATIONS_DIR}/revert/${name}.sql`);
@@ -90,10 +90,8 @@ const migrateSqitch = (name, note) => {
 
 const devPgDumpToFile = file => {
   let p = proc.spawnSync('docker', ['exec', `${COMPOSE_PROJECT_NAME}_db_1`, 'pg_dump', DEV_DB_NAME, '-U', DEV_SUPER_USER]);
-  if(p.stdout.toString()){
-    let content = "BEGIN;\n" + p.stdout.toString() + "\nCOMMIT;\n";
-    fs.writeFileSync(file, content);
-  }
+  if(p.stdout.toString())
+    fs.writeFileSync(file, surroundWithBeginCommit(p.stdout.toString()));
   if(p.stderr.toString()){
     console.log(p.stderr.toString());
     process.exit(0);
@@ -104,8 +102,7 @@ const prodPgDumpToFile = file => {
   console.log("Getting dump from production database...");
   let p = proc.spawnSync('docker', ['exec', `${COMPOSE_PROJECT_NAME}_db_1`, 'pg_dump', PROD_PG_URI]);
   if(p.stdout.toString()){
-    let content = "BEGIN;\n" + p.stdout.toString() + "\nCOMMIT;\n";
-    fs.writeFileSync(file, content);
+    fs.writeFileSync(file, surroundWithBeginCommit(p.stdout.toString()));
     console.log("Done.");
   }
   if(p.stderr.toString()){
@@ -116,12 +113,12 @@ const prodPgDumpToFile = file => {
 
 const apgdiffToFile = (file1, file2, destFile) => {
   let p = proc.spawnSync('java', ['-jar', APGDIFF_PATH, file1, file2]);
-  if(p.stdout.toString()){
-    let content = "BEGIN;\n" + p.stdout.toString() + "\nCOMMIT;\n";
-    fs.writeFileSync(destFile, content);
-  }
+  if(p.stdout.toString())
+    fs.writeFileSync(destFile, surroundWithBeginCommit(p.stdout.toString()));
   if(p.stderr.toString())
     console.log(p.stderr.toString());
 };
+
+const surroundWithBeginCommit = str => "BEGIN;\n" + str + "\nCOMMIT;"
 
 export { init, migrate };
