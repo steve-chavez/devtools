@@ -4,7 +4,7 @@ import fs from 'fs';
 import program from 'commander';
 import {version} from '../package.json';
 import runDashboard from './dashboard.js';
-import { init, migrate } from './migrations.js';
+import { initMigrations, addMigration, deployMigrations } from './migrations.js';
 
 program
   .version(version)
@@ -19,13 +19,18 @@ program
 program
   .command('init-migrations')
   .description('Setup sqitch config for migrations')
-  .action(() => init());
+  .action(() => initMigrations());
 
 program
-  .command('migrations <name>')
+  .command('add-migration <name>')
   .option("-n, --note [note]", "Add sqitch migration note")
-  .description('Create a new sqitch migration')
-  .action((name, options) => migrate(name, options.note));
+  .description('Adds a new sqitch migration')
+  .action((name, options) => addMigration(name, options.note));
+
+program
+  .command('deploy-migrations')
+  .description('Deploy sqitch migrations to production database')
+  .action(() => deployMigrations());
 
 program.parse(process.argv);
 

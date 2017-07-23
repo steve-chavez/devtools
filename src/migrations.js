@@ -18,17 +18,17 @@ const SQITCH_PATH = process.env.SQITCH_PATH || 'sqitch';
 
 const MIGRATIONS_DIR = "./db/migrations";
 
-const init = () => {
+const initMigrations = () => {
   const INITIAL_FILE_NAME = "initial";
   initSqitch();
-  migrateSqitch(INITIAL_FILE_NAME);
+  addSqitchMigration(INITIAL_FILE_NAME);
   devPgDumpToFile(`${MIGRATIONS_DIR}/deploy/${INITIAL_FILE_NAME}.sql`);
   apgdiffToFile(`${MIGRATIONS_DIR}/deploy/${INITIAL_FILE_NAME}.sql`,
                 `${MIGRATIONS_DIR}/revert/${INITIAL_FILE_NAME}.sql`,
                 `${MIGRATIONS_DIR}/revert/${INITIAL_FILE_NAME}.sql`);
 };
 
-const migrate = (name, note) => {
+const addMigration = (name, note) => {
 
   const TMP_DIR = `${MIGRATIONS_DIR}/tmp`;
 
@@ -56,7 +56,7 @@ const migrate = (name, note) => {
   devPgDumpToFile(`${TMP_DIR}/dev-${name}.sql`);
   prodPgDumpToFile(`${TMP_DIR}/prod-${name}.sql`);
 
-  migrateSqitch(name, note);
+  addSqitchMigration(name, note);
 
   apgdiffToFile(`${TMP_DIR}/dev-${name}.sql`,
                 `${TMP_DIR}/prod-${name}.sql`,
@@ -78,7 +78,7 @@ const initSqitch = () => {
   }
 };
 
-const migrateSqitch = (name, note) => {
+const addSqitchMigration = (name, note) => {
   let p = proc.spawnSync(SQITCH_PATH, ["add", name, "-n", note || `Add ${name} migration`]);
   if(p.stdout.toString())
     console.log(p.stdout.toString());
@@ -121,4 +121,12 @@ const apgdiffToFile = (file1, file2, destFile) => {
 
 const surroundWithBeginCommit = str => "BEGIN;\n" + str + "\nCOMMIT;"
 
-export { init, migrate };
+const deployMigrations = () => {
+  let p = proc.spawnSync(SQITCH_PATH, ["deploy", `db:${PROD_PG_URI}`]);
+  if(p.stdout.toString())
+    console.log(p.stdout.toString());
+  if(p.stderr.toString())
+    console.log(p.stderr.toString());
+};
+
+export { initMigrations, addMigration, deployMigrations };
