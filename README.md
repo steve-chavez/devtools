@@ -62,7 +62,8 @@ You can now do:
   subzero_devtools deploy-migrations
 ```
 
-This would deploy the ```initial.sql``` migration to the production database.
+This would deploy the ```initial.sql``` migration to the production database specified in ```PROD_PG_URI```.
+
 
 ### Adding migrations
 
