@@ -4,7 +4,9 @@
 import program from 'commander';
 import {version} from '../package.json';
 import proc from 'child_process';
+import unzip from 'extract-zip';
 import inquirer from 'inquirer';
+import {runCmd} from './common.js';
 
 program
   .version(version)
@@ -42,15 +44,14 @@ program
 const notEmptyString = s => (typeof s == 'string')&&s.trim().length;
 
 const baseProject = dir => {
-  let p   = proc.spawnSync("git", ["clone", "https://github.com/subzerocloud/postgrest-starter-kit", dir]),
-      out = p.stdout.toString(),
-      err = p.stderr.toString();
-  if(err){
-    console.log(err);
-    process.exit(1);
-  } else {
-    console.log(out);
-  }
+  unzip("/home/steve-chavez/tmp/postgrest-starter-kit-master.zip", { dir: dir }, err => {
+    if(err){
+      console.log(err);
+      process.exit(0);
+    }
+    proc.execSync(`mv ${dir}/postgrest-starter-kit-master/* ${dir}`);
+    proc.execSync(`rm -rf ${dir}/postgrest-starter-kit-master`);
+  });
 }
 
 program.parse(process.argv);
