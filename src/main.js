@@ -14,7 +14,8 @@ program
   .version(version)
   .command('dashboard', 'Open dashboard')
   .command('migrations', 'Manage database migrations process (experimental)')
-  .command('cloud', 'Actions for your subzero.cloud account');
+  .command('cloud', 'Actions for your subzero.cloud account')
+  .command('ecs', 'Actions for a subzero application in ECS');
 
 // program.on('--help', function(){
 //   console.log('');
