@@ -31,21 +31,21 @@ const readSubzeroAppConfig = () => {
   }
 }
 
-const deployApplication = (app_conf, db_admin, db_admin_pass) => {
-  let pg_host = app_conf.host,
-      pg_port = app_conf.port,
-      pg_user = db_admin || app_conf.db_admin,
+const deployApplication = (appConf, db_admin, db_admin_pass) => {
+  let pg_host = appConf.host,
+      pg_port = appConf.port,
+      pg_user = db_admin || appConf.db_admin,
       pg_pass = db_admin_pass;
 
-  checkPostgresConnection(`postgres://${pg_user}@${pg_host}:${pg_port}/${app_conf.db_name}`, pg_pass);
+  checkPostgresConnection(`postgres://${pg_user}@${pg_host}:${pg_port}/${appConf.db_name}`, pg_pass);
 
   console.log("Building and deploying openresty container");
   runCmd("docker", ["build", "-t", "openresty", "./openresty"]);
-  runCmd("docker", ["tag", "openresty", `${app_conf.openresty_repo}:${app_conf.version}`]);
-  runCmd("docker", ["push", `${app_conf.openresty_repo}:${app_conf.version}`]);
+  runCmd("docker", ["tag", "openresty", `${appConf.openresty_repo}:${appConf.version}`]);
+  runCmd("docker", ["push", `${appConf.openresty_repo}:${appConf.version}`]);
 
   console.log("Deploying migrations with sqitch");
-  migrationsDeploy(pg_user, pg_pass, pg_host, pg_port, app_conf.db_name);
+  migrationsDeploy(pg_user, pg_pass, pg_host, pg_port, appConf.db_name);
 }
 
 program.command('app-deploy')
@@ -54,7 +54,7 @@ program.command('app-deploy')
   .description('Deploy a subzero application to ECS')
   .action(options => {
     checkIsAppDir();
-    const app_conf = readSubzeroAppConfig(),
+    const appConf = readSubzeroAppConfig(),
           {dba, password} = options,
           noOptionsSpecified = !dba && !password;
     checkOpenrestyInitiated();
@@ -75,7 +75,7 @@ program.command('app-deploy')
           validate: val => notEmptyString(val)?true:"Cannot be empty"
         }
       ]).then(answers => {
-        deployApplication(app_conf, answers.db_admin, answers.db_admin_pass);
+        deployApplication(appConf, answers.db_admin, answers.db_admin_pass);
       });
     }else{
       if(!notEmptyString(dba))
@@ -85,7 +85,7 @@ program.command('app-deploy')
         console.log("password: cannot be empty");
 
       if(notEmptyString(dba) && notEmptyString(password))
-        deployApplication(app_conf, dba, password);
+        deployApplication(appConf, dba, password);
     }
   });
 
